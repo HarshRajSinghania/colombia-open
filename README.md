@@ -6,7 +6,7 @@
 [![PyPI](https://img.shields.io/pypi/v/colombia-open)](https://pypi.org/project/colombia-open/)
 [![Python](https://img.shields.io/pypi/pyversions/colombia-open)](https://pypi.org/project/colombia-open/)
 [![License](https://img.shields.io/github/license/davidcasr/colombia-open)](LICENSE)
-[![Datasets](https://img.shields.io/badge/datasets-4-success)](#datasets-disponibles)
+[![Datasets](https://img.shields.io/badge/datasets-12-success)](#datasets-disponibles)
 
 Datasets públicos de Colombia, **curados, normalizados y validados**, para
 que cualquiera los use desde Python sin lidiar con los portales, APIs y
@@ -20,9 +20,13 @@ municipios = hub.load_polars("municipios")
 departamentos = hub.load_polars("departamentos")
 ```
 
-> **Proyecto en MVP activo.** Tres fuentes están implementadas (DIVIPOLA:
-> departamentos + municipios, DANE; demografía: proyecciones de población
-> municipal, DANE; y educación: directorio de establecimientos, MEN).
+> **Proyecto en MVP activo.** Once fuentes están implementadas de punta a
+> punta (DIVIPOLA: departamentos + municipios, DANE; geometría municipal,
+> MGN/HDX; demografía: proyecciones de población, DANE; educación:
+> establecimientos y Saber 11, MEN/ICFES; seguridad: hurto a personas,
+> lesiones personales e hurto a residencias/comercio, Policía;
+> infraestructura: puntos de interés urbanos, OpenStreetMap;
+> macroeconomía: TRM, Superfinanciera; y calidad del aire, IDEAM).
 > Publicado en [PyPI](https://pypi.org/project/colombia-open/)
 > (`pip install colombia-open`), con
 > [GitHub Releases](https://github.com/davidcasr/colombia-open/releases)
