@@ -12,6 +12,8 @@ from src.extractors.municipios_geometria_extractor import (
     MUNICIPIOS_GEOMETRIA_FALLBACK_DATA,
     MunicipiosGeometriaExtractor,
     _fallback_geodataframe,
+    _fetch_geodataframe,
+    _fetch_object_ids,
     _normalize,
 )
 
@@ -106,6 +108,60 @@ def test_normalize_empty_input_returns_empty_frame_with_schema():
     assert df.height == 0
     assert (duplicates, invalid) == (0, 0)
     assert df.schema["cod_mpio"] == pl.Utf8
+
+
+def _geojson_feature(mp_codigo: str) -> dict[str, object]:
+    return {
+        "type": "Feature",
+        "properties": {"MpCodigo": mp_codigo},
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [[[0.0, 0.0], [0.0, 0.01], [0.01, 0.01], [0.01, 0.0], [0.0, 0.0]]],
+        },
+    }
+
+
+def test_fetch_object_ids_returns_ids_from_arcgis_response(monkeypatch):
+    monkeypatch.setattr(
+        geometria_module,
+        "get_json",
+        lambda *_a, **_k: {"objectIds": [1, 2, 3]},
+    )
+    assert _fetch_object_ids() == [1, 2, 3]
+
+
+def test_fetch_object_ids_raises_keyerror_on_empty_response(monkeypatch):
+    monkeypatch.setattr(geometria_module, "get_json", lambda *_a, **_k: {"objectIds": []})
+    with pytest.raises(KeyError):
+        _fetch_object_ids()
+
+
+def test_fetch_geodataframe_paginates_and_derives_pcodes_from_mpcodigo(monkeypatch):
+    # 3 objectIds, tamaño de lote forzado a 2 -> 2 llamadas a /query con
+    # geometría (además de la llamada a returnIdsOnly).
+    monkeypatch.setattr(geometria_module, "_ARCGIS_BATCH_SIZE", 2)
+    batch_sizes: list[int] = []
+
+    def _fake_get_json(_url, *, params, timeout=None):
+        del timeout
+        if params.get("returnIdsOnly") == "true":
+            return {"objectIds": [1, 2, 3]}
+        ids = params["objectIds"].split(",")
+        batch_sizes.append(len(ids))
+        codes = {"1": "05001", "2": "11001", "3": "91001"}
+        return {
+            "type": "FeatureCollection",
+            "features": [_geojson_feature(codes[i]) for i in ids],
+        }
+
+    monkeypatch.setattr(geometria_module, "get_json", _fake_get_json)
+
+    gdf, raw_bytes = _fetch_geodataframe()
+
+    assert batch_sizes == [2, 1]
+    assert len(raw_bytes) > 0
+    assert sorted(gdf["ADM2_PCODE"].tolist()) == ["CO05001", "CO11001", "CO91001"]
+    assert sorted(gdf["ADM1_PCODE"].tolist()) == ["CO05", "CO11", "CO91"]
 
 
 def test_extractor_dry_run_never_writes(tmp_path, monkeypatch):

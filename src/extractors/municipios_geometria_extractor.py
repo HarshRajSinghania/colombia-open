@@ -1,24 +1,37 @@
-"""Extractor de geometría de polígonos municipales (MGN), vía mirror HDX.
+"""Extractor de geometría de polígonos municipales (MGN/IGAC), vía ArcGIS
+REST de la Superintendencia de Notariado y Registro (SNR).
 
 Segunda iteración de `divipola` (ver docs/roadmap/roadmap.md, sección "Por
-qué geografía fue primero"): agrega los polígonos del Marco Geoestadístico
-Nacional (DANE) que `divipola`/`municipios` no incluye (solo centroide).
+qué geografía fue primero"): agrega los polígonos que `divipola`/
+`municipios` no incluye (solo centroide).
 
-Fuente primaria: Humanitarian Data Exchange (HDX), dataset "Colombia -
-Subnational Administrative Boundaries" (`cod-ab-col`, id
-`50ea7fee-f9af-45a7-8a52-abb9c790a0b6`), publicado por OCHA (ROLAC/FISS) a
-partir del Marco Geoestadístico Nacional del DANE. Licencia CC BY-IGO 3.0.
-Confirmado en vivo el 2026-10-20: recurso "COL Administrative Divisions
-Shapefiles.zip" (~117MB), nivel ADM2 (municipio) = 1122 filas, 2020-04-16.
+Fuente primaria: servicio ArcGIS REST "MunicipiosSNR", publicado por IGAC
+(cuenta `antonio.moyano_IGAC_OIT`) en la organización ArcGIS Online de la
+Superintendencia de Notariado y Registro (SNR), sobre cartografía del
+Instituto Geográfico Agustín Codazzi (Ley 1447 de 2011, Decreto 1170 de
+2015). Licencia CC BY 4.0 (confirmada en la metadata del item ArcGIS).
+Confirmado en vivo el 2026-11-05: 1122 municipios (capa 0, `maxRecordCount`
+2000).
 
-https://data.humdata.org/dataset/cod-ab-col
+https://services2.arcgis.com/RVvWzU3lgJISqdke/arcgis/rest/services/MunicipiosSNR/FeatureServer/0
 
-El zip trae 4 niveles administrativos (admin0-3) como shapefiles
-independientes; se usa solo el nivel ADM2 (municipio) — el shapefile se
-localiza dentro del zip por patrón (`*admbnda_adm2*.shp` + sus componentes
-`.dbf`/`.shx`/`.prj`/`.cpg`), no por nombre exacto, porque HDX versiona el
-nombre de archivo con la fecha de la vigencia (hoy `20200416`) y puede
-cambiar en una actualización futura del recurso.
+**Migrado desde HDX el 2026-11-05** (ver git log de este archivo para el
+extractor anterior): el recurso de HDX
+(`data.humdata.org/dataset/cod-ab-col`) empezó a devolver un reto de AWS
+WAF (`HTTP 202` + header `x-amzn-waf-action: challenge`, sin el zip real)
+a cualquier cliente no-navegador — confirmado con `curl`/`requests` planos,
+reproducible, no transitorio (3 builds en vivo consecutivos fallaron
+igual). El extractor caía a su fallback embebido correctamente (`BadZipFile`
+al parsear el reto como zip), pero eso colapsaba la geocodificación de
+`infraestructura_poi` (que depende de este dataset) a solo 2 polígonos.
+Este servicio ArcGIS no está detrás de ese WAF y es infraestructura global
+de Esri, no un servidor gubernamental colombiano con historial de
+caídas/bloqueos.
+
+La API no permite traer los 1122 polígonos completos en una sola consulta
+sin truncar la geometría (`exceededTransferLimit`) aunque esté bajo
+`maxRecordCount`, así que se pagina por lotes de `objectIds`
+(`_ARCGIS_BATCH_SIZE`) — confirmado en vivo que un lote de 150 no trunca.
 
 Decisiones de alcance:
 
@@ -44,10 +57,7 @@ del repo. Ver `.claude/rules/extractors.md` §6.
 
 from __future__ import annotations
 
-import io
-import re
-import tempfile
-import zipfile
+import json
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -57,7 +67,6 @@ import polars as pl
 import pyproj
 import shapely
 import shapely.wkt
-from pyogrio.errors import DataLayerError, DataSourceError
 from requests import RequestException
 from shapely.errors import ShapelyError
 
@@ -73,25 +82,21 @@ from src.extractors.base import (
     write_raw_snapshot_atomic,
     write_staging_csv_atomic,
 )
-from src.extractors.http_utils import get_bytes
+from src.extractors.http_utils import get_json
 
 DATASET_NAME = "municipios_geometria"
 SOURCE_URL = (
-    "https://data.humdata.org/dataset/50ea7fee-f9af-45a7-8a52-abb9c790a0b6/"
-    "resource/32fba556-0109-4d1c-84cb-c8abddf7775b/download/"
-    "col-administrative-divisions-shapefiles.zip"
+    "https://services2.arcgis.com/RVvWzU3lgJISqdke/arcgis/rest/services/"
+    "MunicipiosSNR/FeatureServer/0"
 )
 SOURCE_NAME = (
-    "DANE (Marco Geoestadístico Nacional), vía HDX — Colombia Subnational "
-    "Administrative Boundaries (cod-ab-col)"
+    "IGAC (Instituto Geográfico Agustín Codazzi), vía Superintendencia de "
+    "Notariado y Registro (SNR) — servicio ArcGIS REST 'MunicipiosSNR'"
 )
-HDX_DATASET_PAGE = "https://data.humdata.org/dataset/cod-ab-col"
-
-# Patrón para localizar el shapefile ADM2 dentro del zip, sin depender del
-# sufijo de fecha exacto ("20200416" hoy, puede cambiar en una actualización
-# futura del recurso en HDX).
-_ADM2_SHP_PATTERN = re.compile(r".*admbnda_adm2.*\.shp$", re.IGNORECASE)
-_SHAPEFILE_COMPONENT_EXTENSIONS = (".shp", ".dbf", ".shx", ".prj", ".cpg")
+_ARCGIS_QUERY_URL = f"{SOURCE_URL}/query"
+# Confirmado en vivo: un lote de 150 objectIds con geometría completa no
+# trunca (`exceededTransferLimit`); 100 deja margen. Ver docstring del módulo.
+_ARCGIS_BATCH_SIZE = 100
 
 # ~55m en el ecuador — ver docstring del módulo.
 SIMPLIFY_TOLERANCE_DEG = 0.0005
@@ -101,29 +106,24 @@ EXPECTED_MIN_ROWS = 1_100
 
 REUSE_POLICY = ReusePolicy(
     status="open-attribution",
-    license="CC BY-IGO 3.0",
-    license_url="http://creativecommons.org/licenses/by/3.0/igo/legalcode",
+    license="CC BY 4.0",
+    license_url="https://creativecommons.org/licenses/by/4.0/deed.es",
     attribution_required=True,
     redistribution_ok=True,
     summary=(
-        "Geometría derivada del Marco Geoestadístico Nacional del DANE, "
-        "curada y redistribuida por OCHA (ROLAC/FISS) vía Humanitarian Data "
-        "Exchange (HDX), dataset 'cod-ab-col'. CC BY-IGO 3.0: redistribuir "
-        "con atribución a DANE y OCHA; a diferencia de CC BY-SA no exige "
-        "licenciar las obras derivadas igual. Ver docs/licenses/data_licenses.md."
+        "Límites municipales sobre cartografía del IGAC, publicados por la "
+        "Superintendencia de Notariado y Registro bajo licencia abierta "
+        "estándar CC BY 4.0 (confirmada en la metadata del item ArcGIS) — "
+        "ver docs/licenses/data_licenses.md."
     ),
 )
 
 # Qué cae a fallback: problemas de la FUENTE (red caída, HTTP 4xx/5xx tras
-# agotar reintentos, zip corrupto, shapefile ADM2 no localizable dentro del
-# zip, o geometría con forma inesperada). Un bug de programación real
-# (AttributeError, NameError, etc.) debe reventar. Ver
-# `.claude/rules/extractors.md` §1.
+# agotar reintentos, respuesta JSON con forma inesperada, geometría con forma
+# inesperada). Un bug de programación real (AttributeError, NameError, etc.)
+# debe reventar. Ver `.claude/rules/extractors.md` §1.
 EXPECTED_FETCH_FAILURES: tuple[type[Exception], ...] = (
     RequestException,
-    zipfile.BadZipFile,
-    DataSourceError,
-    DataLayerError,
     ShapelyError,
     KeyError,
     ValueError,
@@ -195,28 +195,6 @@ def _fallback_geodataframe() -> gpd.GeoDataFrame:
     )
 
 
-def _locate_adm2_shapefile(zip_bytes: bytes, extract_dir: Path) -> Path:
-    """Localiza y extrae el shapefile ADM2 (municipio) dentro del zip. Lanza
-    `KeyError` si no hay exactamente un shapefile ADM2 o le falta algún
-    componente — señal de que el recurso de HDX cambió de forma."""
-    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
-        names = zf.namelist()
-        shp_matches = [n for n in names if _ADM2_SHP_PATTERN.match(n)]
-        if len(shp_matches) != 1:
-            raise KeyError(
-                f"se esperaba exactamente 1 shapefile ADM2 en el zip, se "
-                f"encontraron {len(shp_matches)}: {shp_matches}"
-            )
-        shp_name = shp_matches[0]
-        base = shp_name[: -len(".shp")]
-        for ext in _SHAPEFILE_COMPONENT_EXTENSIONS:
-            member = base + ext
-            if member not in names:
-                raise KeyError(f"falta componente del shapefile ADM2 en el zip: {member}")
-            zf.extract(member, extract_dir)
-        return extract_dir / shp_name
-
-
 def _normalize(gdf: gpd.GeoDataFrame) -> tuple[pl.DataFrame, int, int]:
     """Devuelve (df, cod_mpio_duplicados, geometrias_invalidas). `gdf` trae
     como mínimo ADM1_PCODE, ADM2_PCODE y geometry en EPSG:4326."""
@@ -254,14 +232,56 @@ def _normalize(gdf: gpd.GeoDataFrame) -> tuple[pl.DataFrame, int, int]:
     return df.sort("cod_mpio"), duplicates, invalid_count
 
 
+def _fetch_object_ids() -> list[int]:
+    response = get_json(
+        _ARCGIS_QUERY_URL,
+        params={"where": "1=1", "returnIdsOnly": "true", "f": "json"},
+        timeout=60,
+    )
+    object_ids: list[int] = response["objectIds"]
+    if not object_ids:
+        raise KeyError(f"el servicio ArcGIS no devolvió objectIds: {response!r}")
+    return object_ids
+
+
+def _fetch_features_batch(object_ids: list[int]) -> list[dict[str, Any]]:
+    response = get_json(
+        _ARCGIS_QUERY_URL,
+        params={
+            "objectIds": ",".join(str(oid) for oid in object_ids),
+            "outFields": "MpCodigo",
+            "outSR": "4326",
+            "f": "geojson",
+        },
+        timeout=90,
+    )
+    features: list[dict[str, Any]] = response["features"]
+    return features
+
+
 def _fetch_geodataframe() -> tuple[gpd.GeoDataFrame, bytes]:
-    zip_bytes = get_bytes(SOURCE_URL, timeout=180)
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        shp_path = _locate_adm2_shapefile(zip_bytes, Path(tmp_dir))
-        gdf = gpd.read_file(shp_path)
-    if gdf.crs is not None and gdf.crs.to_epsg() != 4326:
-        gdf = gdf.to_crs(epsg=4326)
-    return gdf, zip_bytes
+    """Trae los 1122 municipios del servicio ArcGIS en lotes de
+    `_ARCGIS_BATCH_SIZE` objectIds (una sola consulta trunca la geometría,
+    ver docstring del módulo), y arma el GeoDataFrame con las columnas
+    ADM1_PCODE/ADM2_PCODE que espera `_normalize()` — mismo contrato que
+    el extractor HDX anterior, derivadas de `MpCodigo` (ya viene como
+    código DIVIPOLA de 5 dígitos, ej. "91001")."""
+    object_ids = _fetch_object_ids()
+
+    features: list[dict[str, Any]] = []
+    for i in range(0, len(object_ids), _ARCGIS_BATCH_SIZE):
+        batch = object_ids[i : i + _ARCGIS_BATCH_SIZE]
+        features.extend(_fetch_features_batch(batch))
+
+    for feature in features:
+        cod_mpio = str(feature["properties"]["MpCodigo"]).zfill(5)
+        feature["properties"]["ADM2_PCODE"] = f"CO{cod_mpio}"
+        feature["properties"]["ADM1_PCODE"] = f"CO{cod_mpio[:2]}"
+
+    raw_bytes = json.dumps({"type": "FeatureCollection", "features": features}).encode("utf-8")
+
+    gdf = gpd.GeoDataFrame.from_features(features, crs="EPSG:4326")
+    return gdf, raw_bytes
 
 
 def _normalization_notes(duplicates: int, invalid: int) -> list[str]:
@@ -269,7 +289,7 @@ def _normalization_notes(duplicates: int, invalid: int) -> list[str]:
     if duplicates > 0:
         notes.append(
             f"{duplicates} filas con cod_mpio duplicado — se conservó la primera "
-            "aparición en el shapefile."
+            "aparición en la fuente."
         )
     if invalid > 0:
         notes.append(
@@ -286,7 +306,7 @@ class MunicipiosGeometriaExtractor(BaseExtractor):
 
     def fetch(self, **kwargs: Any) -> ExtractionResult:
         try:
-            gdf, zip_bytes = _fetch_geodataframe()
+            gdf, raw_bytes = _fetch_geodataframe()
             df, duplicates, invalid = _normalize(gdf)
             notes = _normalization_notes(duplicates, invalid)
             if df.height < EXPECTED_MIN_ROWS:
@@ -297,8 +317,8 @@ class MunicipiosGeometriaExtractor(BaseExtractor):
 
             ensure_staging_directories()
             timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
-            raw_path = RAW_DIR / f"municipios_geometria_{timestamp}.zip"
-            write_raw_snapshot_atomic(raw_path, zip_bytes)
+            raw_path = RAW_DIR / f"municipios_geometria_{timestamp}.geojson"
+            write_raw_snapshot_atomic(raw_path, raw_bytes)
 
             return ExtractionResult(
                 dataset=DATASET_NAME,
@@ -307,13 +327,14 @@ class MunicipiosGeometriaExtractor(BaseExtractor):
                 source_url=SOURCE_URL,
                 source_mode="live",
                 source_detail=(
-                    "Shapefile ADM2 (municipio) extraído del zip de HDX; geometría "
-                    f"simplificada (tolerancia {SIMPLIFY_TOLERANCE_DEG}°) y redondeada "
-                    f"a {WKT_ROUNDING_PRECISION} decimales — ver docstring del extractor"
+                    "Polígonos paginados del servicio ArcGIS 'MunicipiosSNR' (IGAC/SNR); "
+                    f"geometría simplificada (tolerancia {SIMPLIFY_TOLERANCE_DEG}°) y "
+                    f"redondeada a {WKT_ROUNDING_PRECISION} decimales — ver docstring "
+                    "del extractor"
                 ),
                 reuse_policy=REUSE_POLICY,
                 raw_snapshot_path=str(raw_path.relative_to(ROOT_DIR)),
-                snapshot_hash=compute_sha256(zip_bytes),
+                snapshot_hash=compute_sha256(raw_bytes),
                 notes=notes,
             )
         except EXPECTED_FETCH_FAILURES as exc:
