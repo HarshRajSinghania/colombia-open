@@ -64,7 +64,7 @@ más permisiva).
 | `delincuencia_hurto_personas` | MinDefensa / Policía Nacional, vía datos.gov.co (`4rxi-8m8d`) | CC BY-SA 4.0 | Sí — "Ministerio de Defensa Nacional" | Sí, bajo CC BY-SA 4.0 |
 | `delincuencia_lesiones_personales` | Policía Nacional (DIPON), vía datos.gov.co (`72sg-cybi`) | CC BY-SA 4.0 | Sí — "Dirección General de la Policía Nacional - DIPON" | Sí, bajo CC BY-SA 4.0 |
 | `delincuencia_hurto_modalidades` | Policía Nacional (DIPON), vía datos.gov.co (`6sqw-8cg5`) | CC BY-SA 4.0 | Sí — "Dirección General de la Policía Nacional - DIPON" | Sí, bajo CC BY-SA 4.0 |
-| `municipios_geometria` | DANE (MGN), vía HDX (`cod-ab-col`) | CC BY-IGO 3.0 | Sí — "DANE" y "OCHA" | Sí, bajo CC BY-IGO (sin exigir share-alike) |
+| `municipios_geometria` | IGAC, vía ArcGIS REST "MunicipiosSNR" (Superintendencia de Notariado y Registro) | CC BY 4.0 | Sí — "IGAC" | Sí, bajo CC BY 4.0 (sin exigir share-alike) |
 | `infraestructura_poi` | OpenStreetMap, vía Geofabrik | ODbL 1.0 | Sí — "© OpenStreetMap contributors" | Sí, bajo ODbL 1.0 (share-alike de base de datos) |
 | `educacion_saber11` | ICFES, vía datos.gov.co (`kgxf-xxbe`) | CC BY-SA 4.0 | Sí — "ICFES" | Sí, bajo CC BY-SA 4.0 |
 | `macroeconomia_trm` | Superintendencia Financiera, vía datos.gov.co (`32sa-8pi3`) | CC BY-SA 4.0 | Sí — "Superintendencia Financiera" | Sí, bajo CC BY-SA 4.0 |

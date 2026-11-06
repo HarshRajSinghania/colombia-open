@@ -4,14 +4,18 @@ Geometría de polígonos municipales — segunda iteración de `divipola` /
 `municipios` (que solo trae centroide, no polígono). Un polígono (o
 multipolígono) por municipio, con su área geodésica.
 
-- **Fuente**: DANE (Marco Geoestadístico Nacional), vía Humanitarian Data
-  Exchange (HDX), dataset "Colombia - Subnational Administrative
-  Boundaries" (`cod-ab-col`): <https://data.humdata.org/dataset/cod-ab-col>.
-  Recurso usado: "COL Administrative Divisions Shapefiles.zip", nivel ADM2
-  (municipio), vigencia 2020-04-16.
-- **Licencia**: CC BY-IGO 3.0 — ver `docs/licenses/data_licenses.md`.
+- **Fuente**: IGAC (Instituto Geográfico Agustín Codazzi), vía servicio
+  ArcGIS REST "MunicipiosSNR" de la Superintendencia de Notariado y
+  Registro (SNR):
+  <https://services2.arcgis.com/RVvWzU3lgJISqdke/arcgis/rest/services/MunicipiosSNR/FeatureServer/0>.
+- **Licencia**: CC BY 4.0 — ver `docs/licenses/data_licenses.md`.
 - **Extractor**: `src/extractors/municipios_geometria_extractor.py`.
-- **Filas esperadas**: ~1122 (confirmado en vivo el 2026-10-20).
+- **Filas esperadas**: ~1122 (confirmado en vivo el 2026-11-05).
+- **Migrado desde HDX el 2026-11-05**: el recurso anterior
+  (`data.humdata.org/dataset/cod-ab-col`) empezó a devolver un reto de AWS
+  WAF a cualquier cliente no-navegador en vez del shapefile real — ver
+  `git log` de `src/extractors/municipios_geometria_extractor.py` y el
+  docstring del módulo para el detalle completo del diagnóstico.
 
 ## Esquema
 
@@ -77,19 +81,15 @@ gdf = gpd.GeoDataFrame(
 - **No incluye nombre de municipio.** `cod_mpio` es la única clave; haz
   join con `municipios` para el nombre, evitando mantener dos copias que
   puedan divergir entre fuentes (DANE/DIVIPOLA vs. MGN/HDX).
-- **Vigencia 2020-04-16, no la más reciente posible.** Es el recurso
-  estable confirmado en HDX al momento de implementar esta fuente; el
+- **Vigencia de la cartografía fijada por el proceso de deslinde de cada
+  entidad territorial**, no necesariamente la más reciente posible — el
   límite administrativo de un municipio cambia con poca frecuencia, así
   que el desfase esperado frente al DIVIPOLA vigente es mínimo (ver
   siguiente punto).
-- **Discrepancia de `cod_mpio` con `municipios` (DIVIPOLA) — 1 código en
-  cada sentido.** Confirmado en vivo el 2026-10-20: `94663` (Mapiripana,
-  área no municipalizada histórica) existe en este dataset pero no en
-  `municipios` vigente; `27493` existe en `municipios` pero no en este MGN
-  de 2020 (municipio creado después de esa vigencia). El validador reporta
-  cualquier `cod_mpio` que no exista en `municipios` como warning, no como
-  error — mismo criterio que el resto de datasets que no son DIVIPOLA
-  puro.
+- **Posible discrepancia de `cod_mpio` con `municipios` (DIVIPOLA).** El
+  validador reporta cualquier `cod_mpio` que no exista en `municipios`
+  vigente como warning, no como error — mismo criterio que el resto de
+  datasets que no son DIVIPOLA puro.
 - **CRS fijo en EPSG:4326** (lon/lat, WGS84) — si necesitas un CRS
   proyectado (ej. para cálculos de distancia en metros), reproyecta tú
   mismo con `geopandas`.
