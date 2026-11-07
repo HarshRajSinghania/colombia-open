@@ -1,0 +1,26 @@
+title: "[Pregunta] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes de preguntar, revisa el [README](https://github.com/davidcasr/colombia-open#readme)
+        y la documentación de cada dataset en `docs/datasets/`.
+        Si encontraste un error, abre mejor un issue de tipo **🐛 Bug**.
+  - type: textarea
+    id: question
+    attributes:
+      label: Tu pregunta
+      description: Qué intentas hacer y qué has probado.
+    validations:
+      required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: Código (opcional)
+      render: python
+  - type: input
+    id: version
+    attributes:
+      label: Versión de colombia-open
+      description: "`pip show colombia-open`"
+      placeholder: "0.12.0"

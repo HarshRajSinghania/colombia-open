@@ -1,0 +1,27 @@
+title: "[Idea] "
+labels: ["needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Las ideas aún sin forma van aquí. Cuando estén claras, se convierten en un issue
+        (**📊 Proponer una fuente** o **✨ Mejora**).
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Tipo de idea
+      options:
+        - Una fuente de datos nueva
+        - Una mejora a la librería / API / MCP
+        - Documentación, ejemplos o notebooks
+        - Comunidad / proceso
+        - Otra
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Cuéntanos la idea
+      description: Qué problema resuelve y para quién. Si es una fuente, incluye el link.
+    validations:
+      required: true

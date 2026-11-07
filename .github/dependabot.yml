@@ -1,0 +1,29 @@
+# Actualizaciones automáticas de dependencias.
+# Los títulos de las PRs salen como "chore(deps): ..." / "ci(deps): ..." para
+# pasar el check conventional-title. Agrupadas para no inundar de PRs.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      # Parches y menores en un solo PR; los saltos MAJOR llegan por separado
+      # para revisarlos con calma (pueden romper el pipeline).
+      python-minor-patch:
+        update-types: ["minor", "patch"]
