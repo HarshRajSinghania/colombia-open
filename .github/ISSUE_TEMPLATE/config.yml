@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Preguntas e ideas
+    url: https://github.com/davidcasr/colombia-open/discussions
+    about: Dudas de uso, ideas aún sin forma o conversación general — van en Discussions, no en issues.
+  - name: 🔒 Reportar una vulnerabilidad
+    url: https://github.com/davidcasr/colombia-open/security/advisories/new
+    about: Reporte privado. No abras un issue público para temas de seguridad.

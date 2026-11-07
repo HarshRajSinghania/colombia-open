@@ -1,0 +1,65 @@
+name: 🐛 Bug en un dataset o extractor
+description: Un dato incorrecto, una columna rara, un extractor roto o un error al usar la librería.
+title: "fix: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportar. Antes de seguir, revisa que no exista ya un issue
+        abierto sobre lo mismo.
+  - type: dropdown
+    id: area
+    attributes:
+      label: ¿Dónde está el problema?
+      options:
+        - Un dataset publicado (dato incorrecto, columna, tipo, filas faltantes)
+        - Un extractor / la fuente cambió o se cayó
+        - La librería (ColombiaOpen, descarga, caché)
+        - El servidor MCP
+        - El CLI
+        - Documentación / landing page
+        - Otro
+    validations:
+      required: true
+  - type: input
+    id: dataset
+    attributes:
+      label: Dataset afectado
+      description: Nombre tal como aparece en el catálogo, si aplica.
+      placeholder: "municipios"
+  - type: input
+    id: version
+    attributes:
+      label: Versión
+      description: "`pip show colombia-open` o el commit/tag si trabajas desde el repo."
+      placeholder: "0.12.0"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: ¿Qué pasó y qué esperabas?
+      description: Si es un dato, incluye el valor que ves y el valor correcto según la fuente oficial (con link).
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Cómo reproducirlo
+      description: Código mínimo o pasos.
+      render: python
+      placeholder: |
+        from colombia_open import ColombiaOpen
+        co = ColombiaOpen()
+        df = co.load_polars("...")
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error / logs
+      render: shell
+  - type: input
+    id: os
+    attributes:
+      label: Sistema operativo y versión de Python
+      placeholder: "Windows 11, Python 3.11.9"

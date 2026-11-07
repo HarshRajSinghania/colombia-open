@@ -146,4 +146,5 @@ Dev: pytest, mypy (strict), ruff, bandit, pip-audit, pre-commit.
 | Revisar calidad de datos antes de mergear | agente `.claude/agents/data-quality-reviewer.md` |
 | Tocar la landing page o la marca | `docs/brand/design-system.md` (tokens) + `site/index.html`/`site/styles.css` (implementación) |
 | Cortar o versionar un release | `.claude/rules/releases.md` |
+| Revisar PRs/issues de colaboradores externos | `.github/CONTRIBUTING.md` (flujo, Conventional Commits, política IA) |
 | Entender/tocar el servidor MCP | `docs/mcp.md` + `src/colombia_open/mcp_server.py` |

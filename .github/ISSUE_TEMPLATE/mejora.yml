@@ -1,0 +1,44 @@
+name: ✨ Mejora
+description: Una mejora a la librería, la API pública, el CLI, el servidor MCP, la documentación o el tooling.
+title: "feat: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Para una fuente de datos nueva usa la plantilla **📊 Proponer una fuente**.
+        Para ideas aún sin forma, abre una conversación en Discussions.
+  - type: textarea
+    id: problem
+    attributes:
+      label: ¿Qué problema resuelve?
+      description: Describe la necesidad, no solo la solución.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propuesta
+      description: Cómo se vería (firma de un método, comando, ejemplo de uso…).
+      render: python
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+  - type: dropdown
+    id: breaking
+    attributes:
+      label: ¿Rompe compatibilidad?
+      description: Renombrar/quitar columnas publicadas o métodos públicos es un cambio MAJOR.
+      options:
+        - "No"
+        - "Sí"
+        - No sé
+    validations:
+      required: true
+  - type: checkboxes
+    id: owner
+    attributes:
+      label: ¿La implementarías tú?
+      options:
+        - label: Quiero implementarla yo (espera a que el mantenedor te asigne el issue antes de empezar)

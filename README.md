@@ -231,6 +231,14 @@ fuera de este paquete.
 
 ## Contribuir
 
+¡Las contribuciones son bienvenidas! Lee la
+[guía de contribución](.github/CONTRIBUTING.md) antes de abrir una PR: todo
+cambio empieza en un issue, los títulos de PR siguen
+[Conventional Commits](https://www.conventionalcommits.org/es/v1.0.0/) y
+`make check` debe pasar en verde. Al participar aceptas el
+[Código de Conducta](.github/CODE_OF_CONDUCT.md). Para temas de seguridad,
+ver [SECURITY.md](.github/SECURITY.md).
+
 Hecho por [David Castro](https://github.com/davidcasr). El flujo de trabajo
 está pensado para sesiones de Claude Code recurrentes — ver `CLAUDE.md` si
 vas a contribuir con un agente de IA.

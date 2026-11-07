@@ -1,0 +1,11 @@
+# Revisores obligatorios cuando el ruleset de `main` tenga activado
+# "Require review from Code Owners". Hoy todo pasa por el mantenedor;
+# cuando haya colaboradores de confianza, se agregan aquí por área.
+
+*                       @davidcasr
+
+# Áreas sensibles — mantener siempre con el mantenedor:
+/.github/               @davidcasr
+/src/colombia_open/     @davidcasr
+/data/registry/         @davidcasr
+/pyproject.toml         @davidcasr

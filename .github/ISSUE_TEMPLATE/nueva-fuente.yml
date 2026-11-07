@@ -1,0 +1,73 @@
+name: 📊 Proponer una fuente de datos
+description: Proponer (o tomar) una fuente pública de Colombia para agregar al catálogo.
+title: "feat: agregar <nombre_dataset> (<entidad>)"
+labels: ["new-source", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Revisa primero [`docs/roadmap/roadmap.md`](https://github.com/davidcasr/colombia-open/blob/main/docs/roadmap/roadmap.md):
+        muchas fuentes ya están mapeadas con su dificultad. Si la tuya está ahí, enlaza la fila.
+
+        **Una fuente por issue y por PR**, de punta a punta (extractor + builder + validación + registro + tests + docs).
+  - type: input
+    id: name
+    attributes:
+      label: Nombre de la fuente y entidad que la publica
+      placeholder: "Proyecciones de población municipal — DANE"
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: URL / endpoint de descarga o API
+      description: El endpoint de datos, no solo la página informativa.
+      placeholder: "https://www.datos.gov.co/resource/xxxx-xxxx.json"
+    validations:
+      required: true
+  - type: checkboxes
+    id: verified
+    attributes:
+      label: Verificación del endpoint
+      description: El roadmap y los buscadores suelen estar desactualizados.
+      options:
+        - label: Probé el endpoint hoy con `curl` (o similar) y devuelve datos
+          required: true
+  - type: dropdown
+    id: access
+    attributes:
+      label: Tipo de acceso
+      options:
+        - API JSON (p. ej. Socrata / datos.gov.co)
+        - Descarga directa (CSV, XLSX, ZIP, shapefile)
+        - Scraping HTML (sin API ni descarga)
+        - Requiere registro / token
+        - No sé
+    validations:
+      required: true
+  - type: input
+    id: license
+    attributes:
+      label: Licencia de los datos
+      description: Con link a donde la fuente la declara. Si es ambigua o restrictiva, solo publicaríamos metadata + link (ver docs/licenses/data_licenses.md).
+      placeholder: "CC BY-SA 4.0 — https://..."
+    validations:
+      required: true
+  - type: textarea
+    id: shape
+    attributes:
+      label: Qué contiene
+      description: Cobertura temporal y geográfica, granularidad (municipio, estación, establecimiento…), filas aproximadas, columnas clave, frecuencia de actualización.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: ¿Para qué sirve?
+      description: Casos de uso concretos. Ayuda a priorizar.
+  - type: checkboxes
+    id: owner
+    attributes:
+      label: ¿La implementarías tú?
+      options:
+        - label: Quiero implementarla yo (espera a que el mantenedor te asigne el issue antes de empezar)
