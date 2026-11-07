@@ -53,6 +53,7 @@
       <div class="nav-links">
         <a href="#catalogo">Catálogo</a>
         <a href="#roadmap">Roadmap</a>
+        <a href="#contribuir">Contribuir</a>
         <a href="https://pypi.org/project/colombia-open/" target="_blank" rel="noopener">PyPI</a>
         <a class="nav-github" href="https://github.com/davidcasr/colombia-open">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
@@ -173,13 +174,13 @@ hub.resolve_municipios([<span class="gold">"medellín"</span>, <span class="gold
             <h3>Geometría municipal</h3>
             <span class="dataset-slug">municipios_geometria</span>
           </div>
-          <p>Geometría de polígonos municipales (Marco Geoestadístico Nacional), simplificada, con área geodésica.</p>
+          <p>Geometría de polígonos municipales, simplificada, con área geodésica.</p>
           <div class="dataset-meta">
             <span class="pill">1.122 filas</span>
             <span class="pill">parquet · json</span>
-            <span class="pill">CC BY-IGO 3.0</span>
+            <span class="pill">CC BY 4.0</span>
           </div>
-          <p class="dataset-source">Fuente: <a href="https://data.humdata.org/dataset/cod-ab-col" target="_blank" rel="noopener">DANE (MGN), vía HDX — Colombia Subnational Administrative Boundaries</a><br>Actualizado: 22 de octubre de 2026</p>
+          <p class="dataset-source">Fuente: <a href="https://services2.arcgis.com/RVvWzU3lgJISqdke/arcgis/rest/services/MunicipiosSNR/FeatureServer/0" target="_blank" rel="noopener">IGAC, vía Superintendencia de Notariado y Registro (ArcGIS REST)</a><br>Actualizado: 22 de octubre de 2026</p>
         </div>
         <p class="eyebrow catalog-group-label">Demografía</p>
         <div class="dataset-card">
@@ -319,7 +320,7 @@ hub.resolve_municipios([<span class="gold">"medellín"</span>, <span class="gold
           </thead>
           <tbody>
             <tr><td>Geografía (códigos + centroides)</td><td>DANE, vía datos.gov.co</td><td><span class="status-dot done"></span>Implementada</td></tr>
-            <tr><td>Geografía (geometría de polígonos, MGN)</td><td>DANE, vía HDX</td><td><span class="status-dot done"></span>Implementada</td></tr>
+            <tr><td>Geografía (geometría de polígonos municipales)</td><td>IGAC, vía SNR (ArcGIS)</td><td><span class="status-dot done"></span>Implementada</td></tr>
             <tr><td>Demografía (censo / proyecciones)</td><td>DANE — proyecciones de población</td><td><span class="status-dot done"></span>Implementada</td></tr>
             <tr><td>Educación (directorio de establecimientos)</td><td>MinEducación (MEN)</td><td><span class="status-dot done"></span>Implementada</td></tr>
             <tr><td>Educación (Saber 11)</td><td>ICFES</td><td><span class="status-dot done"></span>Implementada</td></tr>
@@ -339,6 +340,36 @@ hub.resolve_municipios([<span class="gold">"medellín"</span>, <span class="gold
           </tbody>
         </table>
       </div>
+      <p class="roadmap-cta">¿Conoces una fuente pública que falta? <a href="https://github.com/davidcasr/colombia-open/issues/new?template=nueva-fuente.yml" target="_blank" rel="noopener">Propónla en GitHub</a>.</p>
+    </div>
+  </section>
+
+  <section class="band contribute" id="contribuir">
+    <div class="wrap">
+      <h2>Contribuir</h2>
+      <p class="intro">colombia-open es abierto y crece con quien lo usa. Hay tres formas de sumarse, ninguna requiere permiso previo.</p>
+      <div class="contribute-grid">
+        <div class="dataset-card">
+          <p class="eyebrow">01 · Datos</p>
+          <h3>Propón una fuente</h3>
+          <p>Una fuente oficial con endpoint verificable y licencia clara. Cada propuesta pasa por el mismo filtro: procedencia, vigencia y validación.</p>
+          <a class="btn btn-secondary" href="https://github.com/davidcasr/colombia-open/issues/new?template=nueva-fuente.yml" target="_blank" rel="noopener">Proponer fuente</a>
+        </div>
+        <div class="dataset-card">
+          <p class="eyebrow">02 · Código</p>
+          <h3>Escribe código</h3>
+          <p>Toma un issue marcado para empezar, comenta que lo trabajas y sigue la guía: una fuente por PR, de punta a punta, con tests y docs.</p>
+          <a class="contribute-link" href="https://github.com/davidcasr/colombia-open/labels/good%20first%20issue" target="_blank" rel="noopener">Ver issues para empezar →</a>
+          <a class="btn btn-secondary" href="https://github.com/davidcasr/colombia-open/blob/main/.github/CONTRIBUTING.md" target="_blank" rel="noopener">Guía de contribución</a>
+        </div>
+        <div class="dataset-card">
+          <p class="eyebrow">03 · Comunidad</p>
+          <h3>Conversa</h3>
+          <p>Preguntas de uso, ideas aún sin forma o casos de uso que te gustaría resolver. Un buen lugar para empezar antes de abrir un issue.</p>
+          <a class="btn btn-secondary" href="https://github.com/davidcasr/colombia-open/discussions" target="_blank" rel="noopener">Ir a Discussions</a>
+        </div>
+      </div>
+      <p class="terminal-note">Al participar aceptas el <a href="https://github.com/davidcasr/colombia-open/blob/main/.github/CODE_OF_CONDUCT.md" target="_blank" rel="noopener">Código de Conducta</a>. ¿Encontraste una vulnerabilidad? Repórtala en privado — ver la <a href="https://github.com/davidcasr/colombia-open/blob/main/.github/SECURITY.md" target="_blank" rel="noopener">política de seguridad</a>.</p>
     </div>
   </section>
 
@@ -376,6 +407,12 @@ hub.resolve_municipios([<span class="gold">"medellín"</span>, <span class="gold
           <a href="https://pypi.org/project/colombia-open/" target="_blank" rel="noopener">PyPI</a>
           <a href="https://github.com/davidcasr/colombia-open/blob/main/docs/mcp.md" target="_blank" rel="noopener">Servidor MCP</a>
           <a href="https://github.com/davidcasr/colombia-open/releases" target="_blank" rel="noopener">Releases</a>
+        </div>
+        <div class="foot-col">
+          <h4>Comunidad</h4>
+          <a href="https://github.com/davidcasr/colombia-open/blob/main/.github/CONTRIBUTING.md" target="_blank" rel="noopener">Cómo contribuir</a>
+          <a href="https://github.com/davidcasr/colombia-open/discussions" target="_blank" rel="noopener">Discussions</a>
+          <a href="https://github.com/davidcasr/colombia-open/blob/main/.github/CODE_OF_CONDUCT.md" target="_blank" rel="noopener">Código de Conducta</a>
         </div>
         <div class="foot-col">
           <h4>Licencias</h4>

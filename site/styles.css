@@ -224,11 +224,22 @@ h1, h2, h3 { text-wrap: balance; margin: 0; font-family: Fraunces, "Iowan Old St
 .status-dot.pending { background: var(--fg-muted); opacity: 0.55; }
 .roadmap-table-wrap { overflow-x: auto; }
 
+.roadmap-cta { margin: 1.4rem 0 0; font-size: 0.92rem; color: var(--fg-muted); }
+.roadmap-cta a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.roadmap-cta a:hover { text-decoration: underline; }
+
+/* ---------- Contribute ---------- */
+.contribute-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.1rem; margin-bottom: 1.4rem; }
+.contribute-grid .eyebrow { margin: 0; }
+.contribute-grid .btn { align-self: flex-start; margin-top: auto; }
+.contribute-link { font-size: 0.82rem; color: var(--fg-muted); text-decoration: none; }
+.contribute-link:hover { color: var(--fg); }
+
 /* ---------- Footer ---------- */
 .site-footer { padding-block: 3rem 2.2rem; }
 .foot-grid {
   display: grid;
-  grid-template-columns: 1.3fr repeat(3, 1fr);
+  grid-template-columns: 1.3fr repeat(4, 1fr);
   gap: 2rem;
   padding-bottom: 2.2rem;
   border-bottom: 1px solid var(--line);
@@ -261,6 +272,7 @@ h1, h2, h3 { text-wrap: balance; margin: 0; font-family: Fraunces, "Iowan Old St
 }
 
 @media (max-width: 480px) {
+  .nav-links { gap: 0.6rem 1rem; font-size: 0.88rem; }
   .band { padding-block: 2.6rem; }
   .hero { padding-block: 2.6rem 3rem; }
   .foot-grid { grid-template-columns: 1fr; }
